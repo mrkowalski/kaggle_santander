@@ -1,12 +1,5 @@
 import sqlite3, sys
 
-#Maunal actions########################
-
-#DROP COLUMN tipodom
-#DROP COLUMN cod_prov. Keep nomprov as this gives a chance to add more data like city size, etc.
-#DROP COLUMN conyuemp - Only one customer has conyuemp = S
-
-#######################################
 def fix_by_finding_earlier_or_later_int(conn, col):
     print("Processing {}...".format(col))
     cur = conn.cursor()
@@ -48,12 +41,26 @@ def drop_clients_with_only_one_entry(conn):
     cur.execute("DELETE FROM bank_data WHERE ncodpers IN (SELECT ncodpers FROM bank_data GROUP BY ncodpers HAVING count(1) = 1);")
     print("Done. Deleted {} rows.".format(cur.rowcount))
 
-with sqlite3.connect('../santander_v2.db', detect_types=sqlite3.PARSE_DECLTYPES) as conn:
+def fix_age(conn):
+    cur = conn.cursor()
+    print("Erase ages < 20 and > 99")
+    cur.execute("UPDATE bank_data SET age = NULL WHERE age < 20 OR age > 99")
+    print("Updated: {}".format(cur.rowcount))
+    print("Get average age")
+    cur.execute("SELECT AVG(age) FROM bank_data WHERE age IS NOT NULL")
+    avgage=int(cur.fetchone()[0])
+    print("Set missing age to mean={}".format(avgage))
+    cur.execute("UPDATE bank_data SET age = ? WHERE age IS NULL", (avgage,))
+
+with sqlite3.connect('./santander_v2.db', detect_types=sqlite3.PARSE_DECLTYPES) as conn:
+
+    conn.execute("PRAGMA cache_size = -8000000")
+
+    fix_age(conn)
+    drop_clients_with_only_one_entry(conn)
 
     fix_by_finding_earlier_or_later_int(conn, 'age')
     fix_by_finding_earlier_or_later_int(conn, 'ind_nomina_ult1')
     fix_by_finding_earlier_or_later_int(conn, 'ind_nom_pens_ult1')
-
-    drop_clients_with_only_one_entry(conn)
 
     conn.commit()

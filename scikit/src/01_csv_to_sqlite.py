@@ -19,20 +19,15 @@ c.execute('''CREATE TABLE bank_data (
     pais_residencia         VARCHAR(30),
     sexo                    CHARACTER(1),
     age                     SMALLINT,
-    fecha_alta              DATE,
     ind_nuevo               BOOLEAN,
     antiguedad              SMALLINT,
     indrel                  SMALLINT,
-    ult_fec_cli_1t          DATE,
     indrel_1mes             SMALLINT,
     tiprel_1mes             CHARACTER(1),
     indresi                 BOOLEAN,
     indext                  BOOLEAN,
-    conyuemp                BOOLEAN,
     canal_entrada           VARCHAR(30),
     indfall                 BOOLEAN,
-    tipodom                 SMALLINT,
-    cod_prov                SMALLINT,
     nomprov                 VARCHAR(100),
     ind_actividad_cliente   BOOLEAN,
     renta                   INTEGER,
@@ -62,14 +57,23 @@ c.execute('''CREATE TABLE bank_data (
     ind_nom_pens_ult1       BOOLEAN,
     ind_recibo_ult1         BOOLEAN)''')
 
+#    fecha_alta              DATE,
+#    ult_fec_cli_1t          DATE,
+#    tipodom                 SMALLINT,
+#    cod_prov                SMALLINT,
+#    conyuemp                BOOLEAN,
+
+c.execute('CREATE INDEX ix_ncodpers ON bank_data (ncodpers ASC)')
+
 reader = pd.read_csv(
-    '../input/train_ver2.csv',
+    '/home/ubuntu/santander/data/train_ver2.csv',
     sep=',',
-    chunksize=100000)
+    chunksize=1000000)
 
 n = 0
 for chunk in reader:
-    c.executemany('INSERT INTO bank_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', chunk.as_matrix())
+    chunk.drop(['tipodom', 'cod_prov', 'conyuemp', 'fecha_alta', 'ult_fec_cli_1t'], inplace=True, axis=1)
+    c.executemany('INSERT INTO bank_data VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', chunk.as_matrix())
     n = n + 1
     print(n)
 
