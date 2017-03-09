@@ -5,7 +5,7 @@ FILE_TEST='/home/ubuntu/santander/data/test_ver2.csv'
 FILE_DF='dataframe.pkl'
 FILE_DF_CLEAN='dataframe_clean.pkl'
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 
 indicators = ['ind_ahor_fin_ult1', 'ind_aval_fin_ult1', 'ind_cco_fin_ult1', 'ind_cder_fin_ult1', 'ind_cno_fin_ult1',
               'ind_ctju_fin_ult1', 'ind_ctma_fin_ult1', 'ind_ctop_fin_ult1', 'ind_ctpp_fin_ult1', 'ind_deco_fin_ult1',
