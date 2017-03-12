@@ -15,3 +15,4 @@ pip install pandas
 pip install tables
 pip install xgboost
 pip install pudb
+git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
