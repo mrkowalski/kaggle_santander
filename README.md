@@ -16,3 +16,4 @@ Some inspiration:
 * pip install xgboost
 * pip install pudb
 * git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+* wget https://www.dropbox.com/s/nd4zd5mb1orutxk/.vimrc?dl=0 -O ~/.vimrc
