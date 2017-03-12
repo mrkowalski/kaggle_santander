@@ -7,6 +7,7 @@ Some inspiration:
 * https://currie32.github.io/Santander_Bank_Analysis.html
 
 sudo apt install python-pip
+pip install --upgrade pip
 pip install virtualenv
 virtualenv -p python3 santander
 . santander/bin/activate
