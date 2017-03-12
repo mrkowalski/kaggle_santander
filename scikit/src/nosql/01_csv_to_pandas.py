@@ -90,6 +90,7 @@ fix_indicators(df)
 fix_indrel_1mes(df)
 
 badtypes=['antiguedad', 'canal_entrada', 'nomprov', 'pais_residencia', 'tiprel_1mes']
+#[('canal_entrada', dtype('O')), ('fecha_dato', dtype('<M8[ns]')), ('nomprov', dtype('O')), ('pais_residencia', dtype('O'))]
 
 as_cat(df, 'sexo')
 as_cat(df, 'segmento')
@@ -99,6 +100,11 @@ as_cat(df, 'ind_empleado')
 as_cat(df, 'indresi')
 as_cat(df, 'indrel_1mes')
 as_cat(df, 'tiprel_1mes')
+
+#Some less suitable ones...
+as_cat(df, 'nomprov')
+as_cat(df, 'pais_residencia')
+as_cat(df, 'canal_entrada')
 
 #log.info("antiguedad: {}".format(df['antiguedad'].value_counts(dropna=False)))
 

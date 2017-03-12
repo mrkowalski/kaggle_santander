@@ -1,7 +1,14 @@
-import commons, sys
+#BUG!!!! WHAT ABOUT FIRST MONTH? IT SHOULD MOST LIKELY CONTAIN NO ACTIVATION FLAGS.
+import commons, sys, os
 import logging as log
 import pandas as pd
-import numpy as np
+import xgboost as xgb
+from sklearn.externals import joblib
+
+def save_model(clf, feature):
+    log.info("Saving model: {}".format(feature))
+    if not os.path.exists("models"): os.makedirs("models")
+    joblib.dump(clf, "models/" + feature + ".pkl")
 
 def add_activations(df):
     for ind in commons.indicators:
@@ -9,7 +16,7 @@ def add_activations(df):
         ind_prev = ind + "_1"
         res = df[ind].sub(df[ind_prev])
         res[res < 0] = 0
-        df = df + res.fillna(0).rename("act_" + ind)
+        df["act_" + ind] = res.fillna(0)
     return df
 
 def show_activation_stats(df):
@@ -25,9 +32,19 @@ for n in range(1, chunks+1):
     log.info('Loading dataframe...#{}'.format(n))
     df = df.append(pd.read_hdf(commons.FILE_DF + "." + str(n), key='santander'))
 
-log.info("{}".format(list(df)))
 df = add_activations(df)
+df.drop(commons.indicators ,inplace=True,axis=1)
+df.drop([i + "_1" for i in commons.indicators] ,inplace=True,axis=1)
 #show_activation_stats(df)
+
+log.info("{}".format([i for i in list(zip(df, df.dtypes)) if i[1] not in ('float64', 'int8', 'uint32', 'bool')]))
+
+for ind in commons.indicators:
+    feature = "act_" + ind
+    X = df.drop(["act_" + i for i in commons.indicators] + ['ncodpers', 'fecha_dato'], axis=1)
+    Y = df[feature]
+    clf = xgb.XGBClassifier()
+    save_model(clf.fit(X, Y), feature)
 
 #log.info('Storing cleaned-up dataframe...')
 #df.to_pickle(commons.FILE_DF_CLEAN)

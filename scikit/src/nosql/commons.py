@@ -1,4 +1,8 @@
 import logging
+import pandas as pd
+
+pd.options.display.max_rows = 999
+pd.options.display.max_columns = 999
 
 FILE_TRAIN='/home/ubuntu/santander/data/train_ver2.csv'
 FILE_TEST='/home/ubuntu/santander/data/test_ver2.csv'
