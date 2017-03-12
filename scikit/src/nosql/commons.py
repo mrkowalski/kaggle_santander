@@ -2,8 +2,8 @@ import logging
 
 FILE_TRAIN='/home/ubuntu/santander/data/train_ver2.csv'
 FILE_TEST='/home/ubuntu/santander/data/test_ver2.csv'
-FILE_DF='dataframe.pkl'
-FILE_DF_CLEAN='dataframe_clean.pkl'
+FILE_DF='dataframe.hdf5'
+FILE_DF_CLEAN='dataframe_clean.hdf5'
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)-15s %(message)s")
 
