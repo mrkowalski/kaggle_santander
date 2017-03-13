@@ -3,10 +3,10 @@ import commons, sys, os
 import logging as log
 import pandas as pd
 import xgboost as xgb
+import numpy as np
 from sklearn.externals import joblib
 
 def save_model(clf, feature):
-    log.info("Saving model: {}".format(feature))
     if not os.path.exists("models"): os.makedirs("models")
     joblib.dump(clf, "models/" + feature + ".pkl")
 
@@ -35,13 +35,33 @@ for n in range(1, chunks+1):
 df = add_activations(df)
 df.drop(commons.indicators ,inplace=True,axis=1)
 df.drop([i + "_1" for i in commons.indicators] ,inplace=True,axis=1)
-#show_activation_stats(df)
+df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
 
-log.info("{}".format([i for i in list(zip(df, df.dtypes)) if i[1] not in ('float64', 'int8', 'uint32', 'bool')]))
+log.info("Creating activation column...")
+activation_columns=["act_" + i for i in commons.indicators]
+df = df[df[activation_columns].sum(axis=1) != 0]
+df['activation'] = df.apply(lambda r: "".join([str(int(e)) for e in r[activation_columns]]), axis=1)
+df['activation'] = df['activation'].astype('category')
+log.info("{}".format(df['activation'].cat.codes))
+sys.exit()
 
+#Build activations model
+log.info("Building activation model...")
+df_any_activation = df.drop(activation_columns, axis=1)
+X = df_any_activation.drop('activation', axis=1)
+Y = df['activation']
+clf = xgb.XGBClassifier()
+log.info("Training activation classifier...")
+save_model(clf.fit(X, Y), 'activation')
+
+#Keep only records with any activations
+df = df[df['activation']]
+df = df.drop('activation')
+log.info("{}".format(df.shape))
+X = df.drop(["act_" + i for i in commons.indicators], axis=1)
 for ind in commons.indicators:
+    log.info("Building model for: {}".format(ind))
     feature = "act_" + ind
-    X = df.drop(["act_" + i for i in commons.indicators] + ['ncodpers', 'fecha_dato'], axis=1)
     Y = df[feature]
     clf = xgb.XGBClassifier()
     save_model(clf.fit(X, Y), feature)
