@@ -32,6 +32,7 @@ for n in range(1, chunks+1):
     log.info('Loading dataframe...#{}'.format(n))
     df = df.append(pd.read_hdf(commons.FILE_DF + "." + str(n), key='santander'))
 
+df.drop(commons.indicators_ignored, inplace=True, axis=1)
 df = add_activations(df)
 df.drop(commons.indicators ,inplace=True,axis=1)
 df.drop([i + "_1" for i in commons.indicators] ,inplace=True,axis=1)
@@ -40,9 +41,10 @@ df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
 log.info("Creating activation column...")
 activation_columns=["act_" + i for i in commons.indicators]
 df = df[df[activation_columns].sum(axis=1) != 0]
+#show_activation_stats(df)
 df['activation'] = df.apply(lambda r: "".join([str(int(e)) for e in r[activation_columns]]), axis=1)
 df['activation'] = df['activation'].astype('category')
-log.info("{}".format(df['activation'].cat.codes))
+log.info("{}".format(df['activation'].cat.categories))
 sys.exit()
 
 #Build activations model
