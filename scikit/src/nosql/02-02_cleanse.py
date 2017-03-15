@@ -16,3 +16,16 @@ def add_activations(df):
         res[res < 0] = 0
         df["act_" + ind] = res.fillna(0)
     return df
+
+df = df[~df['is_test_data']]
+df.drop(['is_test_data'], inplace=True, axis=1)
+df.drop(commons.indicators_ignored, inplace=True, axis=1)
+
+df = add_activations(df)
+df.drop(commons.indicators ,inplace=True,axis=1)
+
+#Drop excessive months. Keep 2015-06, 2016-03/05.
+
+df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
+
+activation_columns=["act_" + i for i in commons.indicators]
