@@ -29,3 +29,6 @@ df.drop(commons.indicators ,inplace=True,axis=1)
 df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
 
 activation_columns=["act_" + i for i in commons.indicators]
+
+for ind in commons.indicators:
+    log.info("Building model for ".format(ind))
