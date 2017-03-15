@@ -26,7 +26,9 @@ df.drop(commons.indicators ,inplace=True,axis=1)
 
 #Drop excessive months. Keep 2015-06, 2016-03/05.
 
-df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
+df = df[~df['fecha_dato'].isin('2015-06', '2016-03', '2016-04', '2016-05')]
+#df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
+df.drop(['ncodpers'], inplace=True, axis=1)
 
 activation_columns=["act_" + i for i in commons.indicators]
 
