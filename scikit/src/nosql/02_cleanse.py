@@ -40,7 +40,7 @@ df.drop(commons.indicators_ignored, inplace=True, axis=1)
 
 df = add_activations(df)
 df.drop(commons.indicators ,inplace=True,axis=1)
-df.drop([i + "_1" for i in commons.indicators] ,inplace=True,axis=1)
+#df.drop([i + "_1" for i in (commons.indicators + commons.indicators_ignored)] ,inplace=True,axis=1)
 df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
 
 activation_columns=["act_" + i for i in commons.indicators]
@@ -59,6 +59,7 @@ log.info("Training activation classifier...")
 df_any_activation = df_with_activations.append(df_without_activations).drop(activation_columns, axis=1)
 X = df_any_activation.drop(['any_activation'], axis=1)
 Y = df_any_activation['any_activation']
+log.info("X: {}, Y: {}".format(list(X.columns.values), Y.name))
 clf = xgb.XGBClassifier(objective = 'binary:logistic', nthread=8, silent=1, max_depth=6)
 
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=42)
@@ -76,6 +77,7 @@ df_with_activations['activation'] = df_with_activations.apply(lambda r: "".join(
 df_with_activations['activation'] = df_with_activations['activation'].astype('category')
 X = df_with_activations.drop(activation_columns + ['activation', 'any_activation'], axis=1)
 Y = df_with_activations['activation']#.cat.codes
+log.info("X: {}, Y: {}".format(list(X.columns.values), Y.name))
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=42)
 
 log.info("Training products classifier...")
