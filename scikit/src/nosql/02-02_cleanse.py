@@ -1,4 +1,3 @@
-
 import commons, sys, os
 import logging as log
 import pandas as pd
@@ -17,6 +16,12 @@ def add_activations(df):
         df["act_" + ind] = res.fillna(0)
     return df
 
+chunks = 1
+df = pd.DataFrame()
+for n in range(1, chunks+1):
+    log.info('Loading dataframe...#{}'.format(n))
+    df = df.append(pd.read_hdf(commons.FILE_DF + "." + str(n), key='santander'))
+
 df = df[~df['is_test_data']]
 df.drop(['is_test_data'], inplace=True, axis=1)
 df.drop(commons.indicators_ignored, inplace=True, axis=1)
@@ -27,7 +32,7 @@ df.drop(commons.indicators ,inplace=True,axis=1)
 #Drop excessive months. Keep 2015-06, 2016-03/05.
 
 log.info("Before: {}".format(df.shape))
-df = df[~df['fecha_dato'].isin(pd.Period('2015-06'), pd.Period('2016-03'), pd.Period('2016-04'), pd.Period('2016-05'))]
+df = df[df['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05')])]
 log.info("After: {}".format(df.shape))
 #df.drop(['ncodpers', 'fecha_dato'], inplace=True, axis=1)
 df.drop(['ncodpers'], inplace=True, axis=1)
@@ -35,4 +40,4 @@ df.drop(['ncodpers'], inplace=True, axis=1)
 activation_columns=["act_" + i for i in commons.indicators]
 
 for ind in commons.indicators:
-    log.info("Building model for ".format(ind))
+    log.info("Building model for {}".format(ind))
