@@ -15,4 +15,4 @@ def add_activations(df):
         res = df[ind].sub(df[ind_prev])
         res[res < 0] = 0
         df["act_" + ind] = res.fillna(0)
-return df
+    return df
