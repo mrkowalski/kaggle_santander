@@ -28,7 +28,7 @@ def show_activation_stats(df):
     for ind in commons.indicators:
         log.info("{}: {}. Distinct={}".format(ind, sum(df["act_" + ind] == 1), df["act_" + ind].unique()))
 
-chunks = 1
+chunks = 3
 df = pd.DataFrame()
 for n in range(1, chunks+1):
     log.info('Loading dataframe...#{}'.format(n))

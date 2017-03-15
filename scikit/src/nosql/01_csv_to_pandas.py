@@ -108,10 +108,10 @@ as_cat(df, 'canal_entrada')
 
 #log.info("antiguedad: {}".format(df['antiguedad'].value_counts(dropna=False)))
 
-chunks = 4
+chunks = 5
 for n in range(1, chunks+1):
     df_n = df[(df['ncodpers'] % chunks == 0)]
-    df_n = add_product_history(df_n, 1)
+    df_n = add_product_history(df_n, 5)
     log.info("Pickling...#{}".format(n))
     df_n.to_hdf(commons.FILE_DF + "." + str(n), key='santander', mode='w', format='fixed')
 
