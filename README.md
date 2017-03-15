@@ -22,5 +22,8 @@ Some inspiration:
 ## Progress log
 
 ### 5 months history
-Activation: Accuracy: 97.18%, precision: 70.68%, recall: 22.36%
-Product:    Accuracy: 75.80%, precision: 60.66%, recall: 32.50%
+|Classifier|Accuracy|Precision|Recall|
+|----------|:------:|:-------:|:----:|
+|Activation|97.18%  | 70.68%  |22.36%|
+|Product   |75.80%  |60.66%   |32.50%|
+
