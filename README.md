@@ -17,3 +17,10 @@ Some inspiration:
 * pip install pudb
 * git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
 * wget https://www.dropbox.com/s/nd4zd5mb1orutxk/.vimrc?dl=0 -O ~/.vimrc
+
+
+## Progress log
+
+### 5 months history
+Activation: Accuracy: 97.18%, precision: 70.68%, recall: 22.36%
+Product:    Accuracy: 75.80%, precision: 60.66%, recall: 32.50%
