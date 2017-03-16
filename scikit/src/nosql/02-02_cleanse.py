@@ -28,7 +28,6 @@ for n in range(1, chunks+1):
 
 df = add_activations(df)
 df.drop(commons.indicators ,inplace=True,axis=1)
-
 df.drop(['ncodpers'], inplace=True, axis=1)
 
 activation_columns=["act_" + i for i in commons.indicators]
