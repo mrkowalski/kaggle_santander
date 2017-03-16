@@ -1,5 +1,6 @@
-import logging
+import logging, os
 import pandas as pd
+from sklearn.externals import joblib
 
 pd.options.display.max_rows = 999
 pd.options.display.max_columns = 999
@@ -18,6 +19,11 @@ indicators = ['ind_cco_fin_ult1', 'ind_cder_fin_ult1', 'ind_cno_fin_ult1',
               'ind_nomina_ult1', 'ind_nom_pens_ult1', 'ind_recibo_ult1']
 
 indicators_ignored = ['ind_ahor_fin_ult1', 'ind_aval_fin_ult1', 'ind_viv_fin_ult1', 'ind_hip_fin_ult1']
+
+def read_model(feature):
+    if os.path.isfile("models/" + feature + ".pkl"):
+        return joblib.load("models/" + feature + ".pkl")
+    return None
 
 #ind_hip_fin_ult1  - 80 activations
 #ind_viv_fin_ult1  - 68 activations

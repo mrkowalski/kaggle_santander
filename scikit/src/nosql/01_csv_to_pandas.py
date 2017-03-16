@@ -1,5 +1,6 @@
 import sys, commons, logging as log
 import pandas as pd
+import numpy as np
 
 def load(f, is_test_data):
     log.info('Loading {}...'.format(f))
@@ -64,7 +65,13 @@ def fix_indrel_1mes(df):
     log.info("Fixing indrel_1mes...")
     df['indrel_1mes'] = df['indrel_1mes'].map(fix_indrel_1mes0)
 
-df = pd.concat([load(commons.FILE_TRAIN, False), load(commons.FILE_TEST, True)])
+#df = pd.concat([load(commons.FILE_TRAIN, False), load(commons.FILE_TEST, True)])
+df = load(commons.FILE_TEST, True)
+for ind in commons.indicators:
+    if ind not in df.columns:
+        df[ind] = None
+
+df.drop(commons.indicators_ignored, inplace=True, axis=1, errors='ignore')
 
 log.info('Strip month...')
 df['fecha_dato'] = df['fecha_dato'].str.slice(stop=7)
@@ -109,15 +116,19 @@ as_cat(df, 'canal_entrada')
 #log.info("antiguedad: {}".format(df['antiguedad'].value_counts(dropna=False)))
 
 chunks = 5
-for n in range(1, chunks+1):
-    df_n = df[(df['ncodpers'] % chunks == 0)]
-    df_n = add_product_history(df_n, 5)
-    log.info("Pickling...#{}".format(n))
-    df_n.to_hdf(commons.FILE_DF + "." + str(n), key='santander', mode='w', format='fixed')
+df_train_data = df[~df['is_test_data']].copy()
+df_train_data.drop(['is_test_data'], inplace=True, axis=1)
+if df_train_data.shape[0] > 0:
+    for n, df_n in df_train_data.groupby(np.arange(len(df_train_data)) // (df_train_data.shape[0] // chunks)):
+        n = n + 1
+        df_n = add_product_history(df_n, 5)
+        df_n = df_n[df_n['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05'), pd.Timestamp('2016-06')])]
+        df_n['fecha_dato'] = df_n.apply(lambda r: r['fecha_dato'].month, axis=1)
+        log.info("Pickling...#{}".format(n))
+        df_n.to_hdf(commons.FILE_DF + "." + str(n), key='santander', mode='w', format='fixed')
 
-#df02 = df[(df['ncodpers'] % 2 == 1)]
-#log.info("{}".format(df01.shape))
-#log.info("{}".format(df02.shape))
-#sys.exit()
-
-
+df_test_data = df[df['is_test_data']].copy()
+df_test_data.drop(['is_test_data'], inplace=True, axis=1)
+df_test_data['fecha_dato'] = df_test_data.apply(lambda r: r['fecha_dato'].month, axis=1)
+if df_test_data.shape[0] > 0:
+    df_test_data.to_hdf(commons.FILE_DF + ".test", key='santander', mode='w', format='fixed')
