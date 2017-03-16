@@ -50,7 +50,7 @@ for ind in commons.indicators:
     Y = df["act_" + ind]
 #    log.info("X: {}, Y: {}".format(list(X.columns.values), Y.name))
     clf = xgb.XGBClassifier(objective = 'binary:logistic', nthread=8, silent=1, max_depth=6)
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.4, random_state=42)
+    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
     clf = clf.fit(X_train, Y_train)
     Y_pred = clf.predict(X_test)
     log.info("Feature importances: {}".format(sorted(zip(list(X), clf.feature_importances_), key=lambda x: x[1])))
@@ -58,3 +58,4 @@ for ind in commons.indicators:
         accuracy_score(Y_test, Y_pred),
         precision_score(Y_test, Y_pred),
         recall_score(Y_test, Y_pred)))
+    save_model(clf, ind)
