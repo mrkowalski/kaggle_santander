@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 
 def save_model(clf, feature):
     if not os.path.exists("models"): os.makedirs("models")
-joblib.dump(clf, "models/" + feature + ".pkl")
+    joblib.dump(clf, "models/" + feature + ".pkl")
 
 def add_activations(df):
     for ind in commons.indicators:
