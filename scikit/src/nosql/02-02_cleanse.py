@@ -7,6 +7,10 @@ from sklearn.externals import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, classification_report, confusion_matrix
 
+def save_model(clf, feature):
+    if not os.path.exists("models"): os.makedirs("models")
+joblib.dump(clf, "models/" + feature + ".pkl")
+
 def add_activations(df):
     for ind in commons.indicators:
         log.info("Adding activations for {}".format(ind))
