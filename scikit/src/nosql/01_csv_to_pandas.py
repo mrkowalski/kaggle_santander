@@ -74,6 +74,7 @@ for ind in commons.indicators:
 df.drop(commons.indicators_ignored, inplace=True, axis=1, errors='ignore')
 
 log.info('Strip month...')
+df['fecha_month'] = pd.to_numeric(df['fecha_dato'].str.slice(start=5, stop=7))
 df['fecha_dato'] = df['fecha_dato'].str.slice(stop=7)
 
 log.info('Convert fecha_dato to date...')
@@ -115,21 +116,46 @@ as_cat(df, 'canal_entrada')
 
 #log.info("antiguedad: {}".format(df['antiguedad'].value_counts(dropna=False)))
 
+log.info("df_01...")
+df_01 = df[df['ncodpers'] < 483000]
+df_01 = add_product_history(df_01, 3)
+
+log.info("df_02...")
+df_02 = df[(df['ncodpers'] >= 483000) & (df['ncodpers'] < 966000)]
+df_02 = add_product_history(df_02, 3)
+
+log.info("df_03...")
+df_03 = df[(df['ncodpers'] >= 966000) & (df['ncodpers'] < 1264000)]
+df_03 = add_product_history(df_03, 3)
+
+log.info("df_04...")
+df_04 = df[df['ncodpers'] >= 1264000]
+df_04 = add_product_history(df_04, 3)
+
+log.info("Merge results...")
+df = df_01.append(df_02)
+del df_01
+del df_02
+df = df.append(df_03)
+del df_03
+df = df.append(df_04)
+del df_04
+
+log.info("Keeping only relevant dates...")
+df = df[df['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05'), pd.Timestamp('2016-06')])]
+df['fecha_dato'] = df['fecha_month'].copy()
+df.drop(['fecha_month'], inplace=True, axis=1)
+
 chunks = 5
 df_train_data = df[~df['is_test_data']].copy()
 df_train_data.drop(['is_test_data'], inplace=True, axis=1)
 if df_train_data.shape[0] > 0:
     for n, df_n in df_train_data.groupby(np.arange(len(df_train_data)) // (df_train_data.shape[0] // chunks)):
         n = n + 1
-        df_n = add_product_history(df_n, 5)
-        df_n = df_n[df_n['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05')])]
-        df_n['fecha_dato'] = df_n.apply(lambda r: r['fecha_dato'].month, axis=1)
         log.info("Pickling...#{}".format(n))
         df_n.to_hdf(commons.FILE_DF + "." + str(n), key='santander', mode='w', format='fixed')
 
 df_test_data = df[df['is_test_data']].copy()
 df_test_data.drop(['is_test_data'], inplace=True, axis=1)
-df_test_data = add_product_history(df_test_data, 5)
-df_test_data['fecha_dato'] = df_test_data.apply(lambda r: r['fecha_dato'].month, axis=1)
 if df_test_data.shape[0] > 0:
     df_test_data.to_hdf(commons.FILE_DF + ".test", key='santander', mode='w', format='fixed')

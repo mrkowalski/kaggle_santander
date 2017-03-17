@@ -20,7 +20,7 @@ def add_activations(df):
         df["act_" + ind] = res.fillna(0)
     return df
 
-chunks = 5
+chunks = 6
 df = pd.DataFrame()
 for n in range(1, chunks+1):
     log.info('Loading dataframe...#{}'.format(n))
