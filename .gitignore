@@ -92,4 +92,4 @@ ENV/
 *.pkl
 *.hdf5*
 
-.idea
+**/.idea
