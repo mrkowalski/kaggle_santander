@@ -97,9 +97,6 @@ fix_renta(df)
 fix_indicators(df)
 fix_indrel_1mes(df)
 
-badtypes=['antiguedad', 'canal_entrada', 'nomprov', 'pais_residencia', 'tiprel_1mes']
-#[('canal_entrada', dtype('O')), ('fecha_dato', dtype('<M8[ns]')), ('nomprov', dtype('O')), ('pais_residencia', dtype('O'))]
-
 as_cat(df, 'sexo')
 as_cat(df, 'segmento')
 as_cat(df, 'indext')
