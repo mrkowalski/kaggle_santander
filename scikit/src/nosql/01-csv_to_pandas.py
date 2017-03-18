@@ -1,4 +1,4 @@
-import sys, commons, logging as log
+import sys, commons, logging as log, math
 import pandas as pd
 import numpy as np
 
@@ -65,6 +65,24 @@ def fix_indrel_1mes(df):
     log.info("Fixing indrel_1mes...")
     df['indrel_1mes'] = df['indrel_1mes'].map(fix_indrel_1mes0)
 
+def product_history_in_chunks0(df, start, end, months):
+    log.info("Processing history chunk, start={}, end={}".format(start, end))
+    return add_product_history(df[(df['ncodpers'] >= start) & (df['ncodpers'] < end)], months)
+
+def product_history_in_chunks(df, chunks, months):
+    qs = [df['ncodpers'].quantile(x / chunks) for x in range(1, chunks)]
+    in_chunks = [product_history_in_chunks0(df, q[0], q[1], months) for q in zip([0] + qs, qs + [math.inf])]
+
+    log.info("History chunk sizes: {}".format([f.shape[0] for f in in_chunks]))
+
+    df = in_chunks[0]
+    del in_chunks[0]
+
+    while len(in_chunks) > 0:
+        df = df.append(in_chunks[0])
+        del in_chunks[0]
+    return df
+
 df = pd.concat([load(commons.FILE_TRAIN, False), load(commons.FILE_TEST, True)])
 #df = load(commons.FILE_TEST, True)
 for ind in commons.indicators:
@@ -111,32 +129,7 @@ as_cat(df, 'nomprov')
 as_cat(df, 'pais_residencia')
 as_cat(df, 'canal_entrada')
 
-#log.info("antiguedad: {}".format(df['antiguedad'].value_counts(dropna=False)))
-
-log.info("df_01...")
-df_01 = df[df['ncodpers'] < 483000]
-df_01 = add_product_history(df_01, 3)
-
-log.info("df_02...")
-df_02 = df[(df['ncodpers'] >= 483000) & (df['ncodpers'] < 966000)]
-df_02 = add_product_history(df_02, 3)
-
-log.info("df_03...")
-df_03 = df[(df['ncodpers'] >= 966000) & (df['ncodpers'] < 1264000)]
-df_03 = add_product_history(df_03, 3)
-
-log.info("df_04...")
-df_04 = df[df['ncodpers'] >= 1264000]
-df_04 = add_product_history(df_04, 3)
-
-log.info("Merge results...")
-df = df_01.append(df_02)
-del df_01
-del df_02
-df = df.append(df_03)
-del df_03
-df = df.append(df_04)
-del df_04
+df = product_history_in_chunks(df, 10, 5)
 
 log.info("Keeping only relevant dates...")
 df = df[df['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05'), pd.Timestamp('2016-06')])]
