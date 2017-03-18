@@ -1,4 +1,4 @@
-import commons
+import commons, sys
 import pandas as pd
 import logging as log
 
@@ -24,7 +24,9 @@ df.drop(['ncodpers'], inplace=True, axis=1)
 for indicator in commons.indicators:
     log.info("Processing: {}".format(indicator))
     model = all_models[indicator]
-    for decision in zip(customers, model.predict(df)):
+    for decision in zip(customers, model.predict_proba(df)):
+        log.info("{}".format(decision))
+        sys.exit()
         if decision[0]  not in submission: submission[decision[0]] = list()
         if decision[1]: submission[decision[0]].append(indicator)
 
