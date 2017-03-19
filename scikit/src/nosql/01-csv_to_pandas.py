@@ -83,6 +83,11 @@ def product_history_in_chunks(df, chunks, months):
         del in_chunks[0]
     return df
 
+def fix_pais_residencia(df):
+    log.info('Transofrming pais_residencia...')
+    df['is_big_city'] = df['pais_residencia'].isin(['MADRID', 'BARCELONA'])
+    df['pais_residencia'] = df['pais_residencia'].map(commons.populations)
+
 df = pd.concat([load(commons.FILE_TRAIN, False), load(commons.FILE_TEST, True)])
 #df = load(commons.FILE_TEST, True)
 for ind in commons.indicators:
@@ -126,13 +131,14 @@ as_cat(df, 'tiprel_1mes')
 
 #Some less suitable ones...
 as_cat(df, 'nomprov')
-as_cat(df, 'pais_residencia')
 as_cat(df, 'canal_entrada')
 
 df = product_history_in_chunks(df, 10, 5)
 
 log.info("Keeping only relevant dates...")
 df = df[df['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05'), pd.Timestamp('2016-06')])]
+
+fix_pais_residencia(df)
 df['fecha_dato'] = df['fecha_month'].copy()
 df.drop(['fecha_month'], inplace=True, axis=1)
 
