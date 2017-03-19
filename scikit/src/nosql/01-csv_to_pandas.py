@@ -4,14 +4,27 @@ import numpy as np
 
 def load(f, is_test_data):
     log.info('Loading {}...'.format(f))
-    df = pd.read_csv(f, sep=',')
+    df = pd.read_csv(f, sep=',', nrows=50000)
     df.drop(['tipodom', 'cod_prov', 'conyuemp', 'fecha_alta', 'ult_fec_cli_1t'], inplace=True, axis=1)
     df.insert(0, 'is_test_data', is_test_data)
     return df
 
+def fix_nulls(df, feature):
+    log.info("Fixing {} with same-client-non-nulls".format(feature))
+    df[['ncodpers', feature]].copy().set_index('ncodpers').to_dict()
+    all_vals = {}
+    for d in pd.date_range('2015-01', '2016-07', freq='MS'):
+        vals = df[df['fecha_dato'] == d][['ncodpers', feature]].copy().set_index('ncodpers').to_dict()[feature]
+        vals = {e[0]:e[1] for e in vals.items() if pd.notnull(e[1]) }
+        all_vals = {**all_vals, **vals}
+    nulls_before=df[df[feature].isnull()].shape[0]
+    df[feature] = df['ncodpers'].map(all_vals)
+    log.info("Nulls for {}: before: {}, after: {}".format(feature, nulls_before, df[df[feature].isnull()].shape[0]))
+
 def fix_age(df):
     log.info('Convert age to numeric...')
     df['age'] = pd.to_numeric(df['age'], downcast='integer', errors='coerce')
+    fix_nulls(df, 'age')
     log.info('Fixing age...')
     df['age'] = df['age'].where((df['age'] >= 20) & (df['age'] <= 99))
     df['age'].fillna(df['age'].mean(), inplace=True)
@@ -83,10 +96,24 @@ def product_history_in_chunks(df, chunks, months):
         del in_chunks[0]
     return df
 
+def fix_nomprov(df):
+    log.info('Transofrming nomprov...')
+    fix_nulls(df, 'nomprov')
+    as_cat(df, 'nomprov')
+    df['is_big_city'] = df['nomprov'].isin(['MADRID', 'BARCELONA'])
+    df['is_africa'] = df['nomprov'].isin(['CEUTA', 'MELILLA'])
+    df['nomprov'] = df['nomprov'].map(commons.populations)
+
 def fix_pais_residencia(df):
-    log.info('Transofrming pais_residencia...')
-    df['is_big_city'] = df['pais_residencia'].isin(['MADRID', 'BARCELONA'])
-    df['pais_residencia'] = df['pais_residencia'].map(commons.populations)
+    log.info('Fixing pais_residencia...')
+    fix_nulls(df, 'pais_residencia')
+    df['pais_residencia'].fillna('ES')
+    as_cat(df, 'pais_residencia')
+
+def as_dummy(df, feature):
+    df = df.join(pd.get_dummies(df[feature], prefix=feature))
+    df.drop(feature, axis=1, inplace=True)
+    return df
 
 df = pd.concat([load(commons.FILE_TRAIN, False), load(commons.FILE_TEST, True)])
 #df = load(commons.FILE_TEST, True)
@@ -111,14 +138,16 @@ df['ncodpers'] = pd.to_numeric(df['ncodpers'], downcast='unsigned', errors='rais
 
 #log.info("Non-unique: {}".format(df[df.duplicated(['ncodpers', 'fecha_dato'])], keep=False))
 
-log.info("Indices: {}".format(df.index.names))
 log.info('Convert antiguedad to numeric...')
 df['antiguedad'] = pd.to_numeric(df['antiguedad'], downcast='unsigned', errors='coerce')
+fix_nulls(df, 'antiguedad')
 
 fix_age(df)
 fix_renta(df)
 fix_indicators(df)
 fix_indrel_1mes(df)
+fix_pais_residencia(df)
+fix_nomprov(df)
 
 as_cat(df, 'sexo')
 as_cat(df, 'segmento')
@@ -130,7 +159,6 @@ as_cat(df, 'indrel_1mes')
 as_cat(df, 'tiprel_1mes')
 
 #Some less suitable ones...
-as_cat(df, 'nomprov')
 as_cat(df, 'canal_entrada')
 
 df = product_history_in_chunks(df, 10, 5)
@@ -138,7 +166,13 @@ df = product_history_in_chunks(df, 10, 5)
 log.info("Keeping only relevant dates...")
 df = df[df['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05'), pd.Timestamp('2016-06')])]
 
-fix_pais_residencia(df)
+df = as_dummy(df, 'ind_empleado')
+df = as_dummy(df, 'segmento')
+df = as_dummy(df, 'indrel_1mes')
+df = as_dummy(df, 'tiprel_1mes')
+
+print(str(list(df)))
+
 df['fecha_dato'] = df['fecha_month'].copy()
 df.drop(['fecha_month'], inplace=True, axis=1)
 
