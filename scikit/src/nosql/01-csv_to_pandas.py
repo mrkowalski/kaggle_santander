@@ -92,13 +92,13 @@ def product_history_in_chunks(df, chunks, months):
 
         c = in_chunks[0]
         del in_chunks[0]
-        
+
         log.info("Filtering out irrelevant dates...")
         c = c[c['fecha_dato'].isin(commons.relevant_dates)]
-        
+
         if df is None: df = c
         else: df = df.append(c)
-            
+
     return df
 
 def fix_nomprov(df):
@@ -173,10 +173,10 @@ df = as_dummy(df, 'segmento')
 df = as_dummy(df, 'indrel_1mes')
 df = as_dummy(df, 'tiprel_1mes')
 
-print(str(list(df)))
-
 df['fecha_dato'] = df['fecha_month'].copy()
 df.drop(['fecha_month'], inplace=True, axis=1)
+
+log.info("Final set of columns: {}".format(list(df)))
 
 chunks = 5
 df_train_data = df[~df['is_test_data']].copy()
