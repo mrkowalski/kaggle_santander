@@ -88,12 +88,17 @@ def product_history_in_chunks(df, chunks, months):
 
     log.info("History chunk sizes: {}".format([f.shape[0] for f in in_chunks]))
 
-    df = in_chunks[0]
-    del in_chunks[0]
-
     while len(in_chunks) > 0:
-        df = df.append(in_chunks[0])
+
+        c = in_chunks[0]
         del in_chunks[0]
+        
+        log.info("Filtering out irrelevant dates...")
+        c = c[c['fecha_dato'].isin(commons.relevant_dates)]
+        
+        if df is None: df = c
+        else: df = df.append(c)
+            
     return df
 
 def fix_nomprov(df):
@@ -162,9 +167,6 @@ as_cat(df, 'tiprel_1mes')
 as_cat(df, 'canal_entrada')
 
 df = product_history_in_chunks(df, 10, 5)
-
-log.info("Keeping only relevant dates...")
-df = df[df['fecha_dato'].isin([pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05'), pd.Timestamp('2016-06')])]
 
 df = as_dummy(df, 'ind_empleado')
 df = as_dummy(df, 'segmento')
