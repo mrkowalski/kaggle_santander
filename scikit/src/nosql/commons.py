@@ -22,6 +22,8 @@ populations = {'ALAVA': 321417, 'ALBACETE': 400007, 'ALICANTE': 1945642, 'ALMERI
 
 indicators_ignored = ['ind_ahor_fin_ult1', 'ind_aval_fin_ult1', 'ind_viv_fin_ult1', 'ind_hip_fin_ult1']
 
+relevant_dates = [pd.Timestamp('2015-06'), pd.Timestamp('2016-03'), pd.Timestamp('2016-04'), pd.Timestamp('2016-05'), pd.Timestamp('2016-06')]
+
 def read_model(feature):
     if os.path.isfile("models/" + feature + ".pkl"):
         return joblib.load("models/" + feature + ".pkl")
